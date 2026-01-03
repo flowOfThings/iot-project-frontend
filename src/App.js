@@ -18,7 +18,7 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/sensor");
+        const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/sensor`);
         const json = await res.json();
 
         setHistory(
