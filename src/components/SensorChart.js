@@ -71,6 +71,7 @@ export default function SensorChart({ entries }) {
           backgroundColor: 'rgba(255,99,132,0.2)',
           spanGaps: true,
           pointRadius: 3,
+          yAxisID: 'y',
         },
         {
           label: 'Humidity (%)',
@@ -79,6 +80,7 @@ export default function SensorChart({ entries }) {
           backgroundColor: 'rgba(54,162,235,0.2)',
           spanGaps: true,
           pointRadius: 3,
+          yAxisID: 'y1',
         },
       ],
     };
@@ -101,7 +103,8 @@ export default function SensorChart({ entries }) {
     },
     scales: {
       x: { display: true, title: { display: false } },
-      y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Value' } },
+      y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Temperature (°C)' } },
+      y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Humidity (%)' }, grid: { drawOnChartArea: false } },
     },
   };
 
