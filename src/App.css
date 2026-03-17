@@ -13,26 +13,29 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
+.app-root {
+  font-family: Inter, Roboto, Arial, sans-serif;
+  color: #111;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.app-header {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
 }
 
-.App-link {
-  color: #61dafb;
-}
+.app-header h1 { margin: 0; font-size: 1.25rem }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+.controls button { padding: 8px 12px }
+
+.app-main { padding: 20px; flex: 1 }
+
+.error { color: crimson; margin-bottom: 12px }
+
+.legend { margin-top: 12px; color: #444 }

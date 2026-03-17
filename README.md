@@ -1,6 +1,74 @@
-# Getting Started with Create React App
+IoT Project Frontend
+====================
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This frontend displays sensor data (temperature & humidity) from the backend and visualizes it in a chart.
+
+API Spec (concise)
+- Auth: device-signed JWT (HS256) — server verifies with JWT_SECRET.
+- Timestamps: ISO8601 UTC strings, e.g. 2026-03-17T19:00:22.000Z
+- Content-Type: application/json
+
+Endpoints
+- POST /api/sensor
+  - Body: { "token": "<JWT>" }
+  - JWT claims (decoded payload): device_id (string, optional), timestamp (ISO8601, required), temperature (number, optional), humidity (number, optional), exp (numeric)
+  - Responses: 200 { "success": true, "data": <savedDocument> } | 400/401/500 with { "error": "..." }
+
+- GET /api/sensor
+  - Response: 200 JSON array (up to 50), server-sorted newest→oldest
+
+- GET /api/sensor/latest
+  - Response: 200 single object or 404
+
+Example POST (curl)
+```
+curl -X POST https://your-backend.example.com/api/sensor \
+  -H "Content-Type: application/json" \
+  -d '{"token":"<JWT_HERE>"}'
+```
+
+Example GET (curl)
+```
+curl https://your-backend.example.com/api/sensor
+```
+
+Parsing / Validation rules for frontend
+- Parse server timestamps with `new Date(entry.timestamp)`; display localized strings.
+- Backend sorts newest→oldest. Client re-sorts to oldest→newest for time series plotting.
+- Handle missing `temperature` and `humidity` fields (treat as null / gaps in chart).
+- Expect error responses shaped as `{ "error": "<message>" }` and handle HTTP 400/401/500 accordingly.
+
+Notes
+- Frontend calls only GET endpoints. POST is performed by devices (they sign tokens).
+- CORS: ensure backend allows your origin or use a proxy.
+# IoT Project Backend
+
+Node.js + Express backend for sensor ingestion and retrieval.
+
+API spec, examples, and quick start are in this README.
+
+Environment variables (create a `.env` from `.env.example`):
+
+- `PORT` - server port (default 3000)
+- `MONGO_URI` - MongoDB connection string
+- `JWT_SECRET` - secret used to verify HS256 tokens
+- `ALLOWED_ORIGINS` - comma-separated allowed browser origins
+
+Quick start:
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Start the server:
+
+```bash
+npm start
+```
+
+See the **API** section below for endpoint details and examples.
 
 ## Available Scripts
 
