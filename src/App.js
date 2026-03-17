@@ -25,7 +25,7 @@ function App() {
           json
           .sort((a, b) => a.timestamp - b.timestamp)
           .map(entry => ({
-            time: new Date(entry.timestamp * 1000).toLocaleTimeString(),
+            time: new Date(entry.timestamp * 1000).toISOString(),
             temperature: entry.temperature,
             humidity: entry.humidity
           }))
