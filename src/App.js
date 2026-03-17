@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './App.css';
 import SensorChart from './components/SensorChart';
-import { fetchSensors, fetchLatest } from './api';
+import { fetchSensors, fetchLatest, getBackendUrl } from './api';
 
 function App() {
   const [entries, setEntries] = useState([]);
@@ -17,7 +17,11 @@ function App() {
       if (Array.isArray(data)) setEntries(data.slice().reverse()); // show oldest->newest
       else setEntries([]);
     } catch (err) {
-      setError(err.message || String(err));
+      // axios error handling
+      const msg = err && err.response && err.response.data && err.response.data.error
+        ? err.response.data.error
+        : err.message || String(err);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -58,6 +62,14 @@ function App() {
       <main className="app-main">
         {error && <div className="error">Error: {error}</div>}
         <SensorChart entries={entries} />
+        <section style={{ marginTop: 18 }}>
+          <h3 style={{ marginBottom: 8 }}>Debug</h3>
+          <div style={{ fontSize: 13, color: '#333' }}>
+            <div><strong>Backend URL:</strong> {getBackendUrl() || '/'}</div>
+            <div style={{ marginTop: 8 }}><strong>Entries (raw):</strong></div>
+            <pre style={{ maxHeight: 220, overflow: 'auto', background: '#f6f6f6', padding: 8 }}>{JSON.stringify(entries, null, 2)}</pre>
+          </div>
+        </section>
         <div className="legend">
           <p>Showing {entries.length} samples (server provides newest→oldest; client displays oldest→newest)</p>
         </div>
