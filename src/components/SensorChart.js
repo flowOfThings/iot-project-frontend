@@ -78,8 +78,16 @@ export default function SensorChart({ entries }) {
     }).map(x => x.e) : [];
 
     const labels = ordered.map(e => fmtTime(e.timestamp));
-    const tempData = ordered.map(e => (typeof e.temperature === 'number' ? Number(e.temperature.toFixed(2)) : null));
-    const humData = ordered.map(e => (typeof e.humidity === 'number' ? Number(e.humidity.toFixed(2)) : null));
+    const tempData = ordered.map(e => {
+      const raw = e && e.temperature != null ? Number(e.temperature) : null;
+      return Number.isFinite(raw) ? Number(raw.toFixed(2)) : null;
+    });
+    const humData = ordered.map(e => {
+      const raw = e && e.humidity != null ? Number(e.humidity) : null;
+      return Number.isFinite(raw) ? Number(raw.toFixed(2)) : null;
+    });
+
+    const numericCount = tempData.reduce((s, v) => s + (v != null ? 1 : 0), 0) + humData.reduce((s, v) => s + (v != null ? 1 : 0), 0);
 
     return {
       labels,
@@ -90,6 +98,7 @@ export default function SensorChart({ entries }) {
           borderColor: 'rgb(255,99,132)',
           backgroundColor: 'rgba(255,99,132,0.2)',
           spanGaps: true,
+          pointRadius: 3,
         },
         {
           label: 'Humidity (%)',
@@ -97,10 +106,17 @@ export default function SensorChart({ entries }) {
           borderColor: 'rgb(54,162,235)',
           backgroundColor: 'rgba(54,162,235,0.2)',
           spanGaps: true,
+          pointRadius: 3,
         },
       ],
     };
   }, [entries]);
+
+  // If there are no numeric points, show a friendly message instead of a blank chart
+  const hasNumeric = useMemo(() => {
+    if (!chartData || !chartData.datasets) return false;
+    return chartData.datasets.some(ds => Array.isArray(ds.data) && ds.data.some(v => v != null));
+  }, [chartData]);
 
   const options = {
     responsive: true,
@@ -119,7 +135,13 @@ export default function SensorChart({ entries }) {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', height: 360 }}>
-      <Line data={chartData} options={options} />
+      {hasNumeric ? (
+        <Line data={chartData} options={options} />
+      ) : (
+        <div style={{ padding: 28, textAlign: 'center', color: '#666' }}>
+          No numeric sensor values available to plot.
+        </div>
+      )}
     </div>
   );
 }
