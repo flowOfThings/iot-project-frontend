@@ -46,15 +46,21 @@ function parseTimestamp(ts) {
   return null;
 }
 
+function pad(n) { return String(n).padStart(2, '0'); }
+
 function fmtTime(ts) {
   const d = parseTimestamp(ts);
   if (!d) {
-    // If parsing failed, show the raw string (trimmed) so users can see original value
     if (ts == null) return '';
     if (typeof ts === 'string') return ts.trim();
     return String(ts);
   }
-  return d.toLocaleString();
+  // MM:DD  HH:MM (local time)
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  return `${mm}:${dd}  ${hh}:${min}`;
 }
 
 export default function SensorChart({ entries }) {
@@ -83,7 +89,6 @@ export default function SensorChart({ entries }) {
           data: tempData,
           borderColor: 'rgb(255,99,132)',
           backgroundColor: 'rgba(255,99,132,0.2)',
-          yAxisID: 'y',
           spanGaps: true,
         },
         {
@@ -91,7 +96,6 @@ export default function SensorChart({ entries }) {
           data: humData,
           borderColor: 'rgb(54,162,235)',
           backgroundColor: 'rgba(54,162,235,0.2)',
-          yAxisID: 'y1',
           spanGaps: true,
         },
       ],
@@ -108,8 +112,7 @@ export default function SensorChart({ entries }) {
     },
     scales: {
       x: { display: true, title: { display: false } },
-      y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Temperature (°C)' } },
-      y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Humidity (%)' }, grid: { drawOnChartArea: false } },
+      y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Value' } },
     },
   };
 

@@ -61,15 +61,22 @@ function App() {
 
       <main className="app-main">
         {error && <div className="error">Error: {error}</div>}
-        <SensorChart entries={entries} />
-        <section style={{ marginTop: 18 }}>
-          <h3 style={{ marginBottom: 8 }}>Debug</h3>
-          <div style={{ fontSize: 13, color: '#333' }}>
-            <div><strong>Backend URL:</strong> {getBackendUrl() || '/'}</div>
-            <div style={{ marginTop: 8 }}><strong>Entries (raw):</strong></div>
-            <pre style={{ maxHeight: 220, overflow: 'auto', background: '#f6f6f6', padding: 8 }}>{JSON.stringify(entries, null, 2)}</pre>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 14, marginBottom: 6 }}>
+            <strong>Latest:</strong>{' '}
+            {entries && entries.length ? (
+              (() => {
+                const latest = entries[entries.length - 1];
+                const t = latest.temperature !== undefined ? `${Number(latest.temperature).toFixed(2)} °C` : '—';
+                const h = latest.humidity !== undefined ? `${Number(latest.humidity).toFixed(2)} %` : '—';
+                const ts = latest.timestamp || '';
+                return <span>{t} / {h} <small style={{ color: '#666' }}>({ts})</small></span>;
+              })()
+            ) : (
+              <span>No data</span>
+            )}
           </div>
-        </section>
+        </div>
         <div className="legend">
           <p>Showing {entries.length} samples (server provides newest→oldest; client displays oldest→newest)</p>
         </div>
