@@ -48,19 +48,28 @@ function parseTimestamp(ts) {
 
 function fmtTime(ts) {
   const d = parseTimestamp(ts);
-  if (!d) return '';
+  if (!d) {
+    // If parsing failed, show the raw string (trimmed) so users can see original value
+    if (ts == null) return '';
+    if (typeof ts === 'string') return ts.trim();
+    return String(ts);
+  }
   return d.toLocaleString();
 }
 
 export default function SensorChart({ entries }) {
   const chartData = useMemo(() => {
     // Ensure entries are ordered oldest -> newest so new data appears on the right
-    const ordered = Array.isArray(entries) ? entries.slice().sort((a, b) => {
+    const ordered = Array.isArray(entries) ? entries.slice().map((e, i) => ({ e, i })).sort((A, B) => {
+      const a = A.e, b = B.e;
       const da = parseTimestamp(a.timestamp);
       const db = parseTimestamp(b.timestamp);
-      if (!da || !db) return 0;
-      return da.getTime() - db.getTime();
-    }) : [];
+      const ta = da ? da.getTime() : -8640000000000000; // very old if unparseable
+      const tb = db ? db.getTime() : -8640000000000000;
+      if (ta !== tb) return ta - tb;
+      // stable sort fallback to original index
+      return A.i - B.i;
+    }).map(x => x.e) : [];
 
     const labels = ordered.map(e => fmtTime(e.timestamp));
     const tempData = ordered.map(e => (typeof e.temperature === 'number' ? Number(e.temperature.toFixed(2)) : null));
