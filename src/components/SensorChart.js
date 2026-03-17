@@ -13,54 +13,26 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-function parseTimestamp(ts) {
-  if (ts == null) return null;
-  // If it's already a Date
-  if (ts instanceof Date) {
-    return isNaN(ts.getTime()) ? null : ts;
-  }
-
-  // Numbers: could be seconds or milliseconds
-  if (typeof ts === 'number') {
-    const asMs = ts > 1e12 ? ts : ts * 1000;
-    const d = new Date(asMs);
-    return isNaN(d.getTime()) ? null : d;
-  }
-
-  // Strings: try ISO parse, or epoch seconds string
-  if (typeof ts === 'string') {
-    // Trim
-    const s = ts.trim();
-    // pure digits -> epoch seconds or ms
-    if (/^\d+$/.test(s)) {
-      const n = Number(s);
-      const asMs = n > 1e12 ? n : n * 1000;
-      const d = new Date(asMs);
-      if (!isNaN(d.getTime())) return d;
-    }
-    // Try Date.parse
-    const parsed = Date.parse(s);
-    if (!Number.isNaN(parsed)) return new Date(parsed);
-  }
-
-  return null;
-}
-
-function pad(n) { return String(n).padStart(2, '0'); }
+import { parseTimestamp, formatForLabel } from '../time';
 
 function fmtTime(ts) {
-  const d = parseTimestamp(ts);
-  if (!d) {
-    if (ts == null) return '';
-    if (typeof ts === 'string') return ts.trim();
-    return String(ts);
+  return formatForLabel(ts) || (ts == null ? '' : String(ts));
+}
+
+function coerceNumber(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v === 'string') {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
   }
-  // MM:DD  HH:MM (local time)
-  const mm = pad(d.getMonth() + 1);
-  const dd = pad(d.getDate());
-  const hh = pad(d.getHours());
-  const min = pad(d.getMinutes());
-  return `${mm}:${dd}  ${hh}:${min}`;
+  if (typeof v === 'object') {
+    // MongoDB extended JSON number formats
+    if (v.$numberDouble) return coerceNumber(Number(v.$numberDouble));
+    if (v.$numberLong) return coerceNumber(Number(v.$numberLong));
+    if (v.$numberInt) return coerceNumber(Number(v.$numberInt));
+  }
+  return null;
 }
 
 export default function SensorChart({ entries }) {
