@@ -104,6 +104,7 @@ export default function SensorChart({ entries }) {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
     stacked: false,
     plugins: {
@@ -117,7 +118,7 @@ export default function SensorChart({ entries }) {
   };
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', height: 360 }}>
       <Line data={chartData} options={options} />
     </div>
   );

@@ -69,7 +69,16 @@ function App() {
                 const latest = entries[entries.length - 1];
                 const t = latest.temperature !== undefined ? `${Number(latest.temperature).toFixed(2)} °C` : '—';
                 const h = latest.humidity !== undefined ? `${Number(latest.humidity).toFixed(2)} %` : '—';
-                const ts = latest.timestamp || '';
+                const fmt = (ts) => {
+                  if (!ts) return '';
+                  try {
+                    const d = new Date(ts);
+                    if (Number.isNaN(d.getTime())) return String(ts);
+                    const pad = (n) => String(n).padStart(2, '0');
+                    return `${pad(d.getMonth()+1)}:${pad(d.getDate())}  ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                  } catch (e) { return String(ts); }
+                };
+                const ts = fmt(latest.timestamp);
                 return <span>{t} / {h} <small style={{ color: '#666' }}>({ts})</small></span>;
               })()
             ) : (
