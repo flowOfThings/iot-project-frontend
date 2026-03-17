@@ -13,20 +13,58 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-function fmtTime(ts) {
-  try {
-    const d = new Date(ts);
-    return d.toLocaleString();
-  } catch (e) {
-    return String(ts);
+function parseTimestamp(ts) {
+  if (ts == null) return null;
+  // If it's already a Date
+  if (ts instanceof Date) {
+    return isNaN(ts.getTime()) ? null : ts;
   }
+
+  // Numbers: could be seconds or milliseconds
+  if (typeof ts === 'number') {
+    const asMs = ts > 1e12 ? ts : ts * 1000;
+    const d = new Date(asMs);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // Strings: try ISO parse, or epoch seconds string
+  if (typeof ts === 'string') {
+    // Trim
+    const s = ts.trim();
+    // pure digits -> epoch seconds or ms
+    if (/^\d+$/.test(s)) {
+      const n = Number(s);
+      const asMs = n > 1e12 ? n : n * 1000;
+      const d = new Date(asMs);
+      if (!isNaN(d.getTime())) return d;
+    }
+    // Try Date.parse
+    const parsed = Date.parse(s);
+    if (!Number.isNaN(parsed)) return new Date(parsed);
+  }
+
+  return null;
+}
+
+function fmtTime(ts) {
+  const d = parseTimestamp(ts);
+  if (!d) return '';
+  return d.toLocaleString();
 }
 
 export default function SensorChart({ entries }) {
   const chartData = useMemo(() => {
-    const labels = entries.map(e => fmtTime(e.timestamp));
-    const tempData = entries.map(e => (typeof e.temperature === 'number' ? Number(e.temperature.toFixed(2)) : null));
-    const humData = entries.map(e => (typeof e.humidity === 'number' ? Number(e.humidity.toFixed(2)) : null));
+    // Ensure entries are ordered oldest -> newest so new data appears on the right
+    const ordered = Array.isArray(entries) ? entries.slice().sort((a, b) => {
+      const da = parseTimestamp(a.timestamp);
+      const db = parseTimestamp(b.timestamp);
+      if (!da || !db) return 0;
+      return da.getTime() - db.getTime();
+    }) : [];
+
+    const labels = ordered.map(e => fmtTime(e.timestamp));
+    const tempData = ordered.map(e => (typeof e.temperature === 'number' ? Number(e.temperature.toFixed(2)) : null));
+    const humData = ordered.map(e => (typeof e.humidity === 'number' ? Number(e.humidity.toFixed(2)) : null));
 
     return {
       labels,
